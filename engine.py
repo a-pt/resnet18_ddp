@@ -1,0 +1,44 @@
+import torch
+
+def train_one_epoch(model, train_loader, loss_fn, optimizer, device):
+    model.train()
+    running_loss = 0.0
+
+    for images, labels in train_loader:
+        images, labels = images.to(device), labels.to(device)
+
+        optimizer.zero_grad()
+
+        logits = model(images)
+        loss = loss_fn(logits, labels)
+
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item()
+
+    epoch_loss = running_loss / len(train_loader)
+    return epoch_loss
+
+def validate(model, val_loader, loss_fn, device):
+    model.eval()
+    running_loss = 0
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for images, labels in val_loader:
+            images, labels = images.to(device), labels.to(device)
+
+            logits = model(images)
+            loss = loss_fn(logits, labels)
+
+            running_loss += loss.item()
+            predictions = logits.argmax(dim=1)
+            correct += (predictions == labels).sum().item()
+            total += labels.size(0)
+
+            epoch_loss = running_loss / len(val_loader)
+            accuracy = correct / total
+            
+    return epoch_loss, accuracy

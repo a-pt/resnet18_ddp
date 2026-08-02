@@ -1,9 +1,16 @@
-import torch
-
 from configs.config import Config
 from utils.device import get_device
 from utils.seed import set_seed
 
+import torch
+import torch.nn as nn
+
+from torch.utils.data import DataLoader
+
+from datasets.cifar10 import get_cifar10_datasets
+from models.resnet18 import ResNet18
+
+from engine import train_one_epoch, validate
 
 
 def main():
@@ -20,7 +27,45 @@ def main():
     print(config)
     print(f"\nRunning on: {device}")
 
+    train_dataset, test_dataset = get_cifar10_datasets()
+
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=config.batch_size,
+        shuffle=True,
+        num_workers=config.num_workers,
+    )
+
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=config.batch_size,
+        shuffle=False,
+        num_workers=config.num_workers,
+    )
+
+    model = ResNet18(num_classes=10)
+    model.to(device)
+
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
     
+    print("\n" + "=" * 50)
+    print("Training")
+    print("=" * 50)
+    
+    for epoch in range(config.epochs):
+        train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, device)
+        val_loss, val_acc = validate(model, test_loader, loss_fn, device)
+        
+        print(f"Epoch {epoch+1}/{config.epochs}")
+        print(f"Train Loss: {train_loss:.4f}")
+        print(f"Val Loss: {val_loss:.4f}")
+        print(f"Val Acc: {val_acc*100:.2f}%")
+        print()
+
+    print("\n" + "=" * 50)
+    print("Training completed")
+    print("=" * 50)
     
 if __name__ == "__main__":
     main()
