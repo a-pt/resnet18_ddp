@@ -1,5 +1,8 @@
 import torch
 import torch.nn as nn
+from utils.model_utils import count_parameters
+from models.mlp import MLP
+from models.simple_cnn import SimpleCNN
 
 def main():
     print("Hello from resnet18-ddp!")
@@ -11,18 +14,10 @@ def device_config():
     print(torch.cuda.device_count())
     print(torch.cuda.get_device_name(0))
 
-class TinyNet(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.fc1 = nn.Linear(4, 8)
-        self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(8, 2)
+def print_model(model):
 
-    def forward(self, x):
-        return self.fc2(self.relu(self.fc1(x)))
-
-def test_model():
-    model = TinyNet()
+    print(model)
+    print(f"\nParameters: {count_parameters(model):,}")
 
     print("Named Modules:")
     for name, module in model.named_modules():
@@ -36,7 +31,26 @@ def test_model():
     for key in model.state_dict():
         print(key)
 
+def test_mlp():
+    model = MLP(num_classes=10)
+
+    print_model(model)
+
+    dummy = torch.randn(8, 3, 32, 32)
+    output = model(dummy)
+
+    print(output.shape)
+
+def test_cnn():
+    model = SimpleCNN()
+
+    print_model(model)
+
+    dummy = torch.randn(4, 3, 32, 32)
+    output = model(dummy)
+    print(output.shape)
+
 if __name__ == "__main__":
     main()
     device_config()
-    test_model()
+    test_cnn()
