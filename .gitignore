@@ -1,26 +1,39 @@
+# ----------------------
 # Python
+# ----------------------
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 
-# Virtual environment
+# Virtual Environment
 .venv/
-
-# PyTorch
-*.pt
-*.pth
-
-# TensorBoard
-runs/
-
-# Outputs
-outputs/
+venv/
 
 # Jupyter
 .ipynb_checkpoints/
 
 # VSCode / Antigravity
 .vscode/
+.idea/
 
-# OS
+# ----------------------
+# Data
+# ----------------------
+data/
+
+# Model checkpoints
+checkpoints/
+*.pth
+*.pt
+*.ckpt
+
+# TensorBoard
+runs/
+
+# Logs
+logs/
+
+# OS files
 .DS_Store
 Thumbs.db
