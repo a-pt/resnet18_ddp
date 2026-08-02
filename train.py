@@ -1,3 +1,4 @@
+from utils.checkpoint import save_checkpoint
 from configs.config import Config
 from utils.device import get_device
 from utils.seed import set_seed
@@ -54,10 +55,16 @@ def main():
     print("Training")
     print("=" * 50)
     
+    best_accuracy = 0.0
+
     for epoch in range(config.epochs):
         train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, device)
         val_loss, val_acc = validate(model, test_loader, loss_fn, device)
         scheduler.step()
+
+        if val_acc > best_accuracy:
+            best_accuracy = val_acc
+            save_checkpoint(model, optimizer, scheduler, epoch, best_accuracy, "checkpoints/best_model.pth")
         
         print(f"Epoch {epoch+1}/{config.epochs}")
         print(f"Current LR: {optimizer.param_groups[0]['lr']}")
@@ -65,7 +72,9 @@ def main():
         print(f"Val Loss: {val_loss:.4f}")
         print(f"Val Acc: {val_acc*100:.2f}%")
         print()
-        
+
+        save_checkpoint(model, optimizer, scheduler, epoch, best_accuracy, "checkpoints/last_checkpoint.pth")
+
     print("\n" + "=" * 50)
     print("Training completed")
     print("=" * 50)
