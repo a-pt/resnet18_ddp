@@ -7,7 +7,7 @@ class Config:
 
     # Training
     batch_size: int = 128
-    epochs: int = 20
+    epochs: int = 10
     learning_rate: float = 1e-3
 
     # Device
@@ -15,4 +15,4 @@ class Config:
 
     # Misc
     seed: int = 42
-    num_workers: int = 4
+    num_workers: int = 0

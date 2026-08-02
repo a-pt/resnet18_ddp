@@ -48,6 +48,7 @@ def main():
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,T_max=config.epochs)
     
     print("\n" + "=" * 50)
     print("Training")
@@ -56,13 +57,15 @@ def main():
     for epoch in range(config.epochs):
         train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, device)
         val_loss, val_acc = validate(model, test_loader, loss_fn, device)
+        scheduler.step()
         
         print(f"Epoch {epoch+1}/{config.epochs}")
+        print(f"Current LR: {optimizer.param_groups[0]['lr']}")
         print(f"Train Loss: {train_loss:.4f}")
         print(f"Val Loss: {val_loss:.4f}")
         print(f"Val Acc: {val_acc*100:.2f}%")
         print()
-
+        
     print("\n" + "=" * 50)
     print("Training completed")
     print("=" * 50)
