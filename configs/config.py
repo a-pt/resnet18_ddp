@@ -3,16 +3,16 @@ from dataclasses import dataclass
 @dataclass
 class Config:
     # Dataset
-    dataset = "CIFAR10"
+    dataset: str = "CIFAR10"
 
     # Training
-    batch_size = 128
-    epochs = 20
-    learning_rate = 1e-3
+    batch_size: int = 128
+    epochs: int = 20
+    learning_rate: float = 1e-3
 
     # Device
-    device = "cuda"
+    device: str = "cuda"
 
     # Misc
-    seed = 42
-    num_workers = 4
+    seed: int = 42
+    num_workers: int = 4
