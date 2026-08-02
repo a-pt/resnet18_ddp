@@ -1,7 +1,7 @@
 [project]
-name = "resnet18-ddp"
+name = "resnet18_ddp"
 version = "0.1.0"
-description = "Add your description here"
+description = "ResNet18 DDP"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
