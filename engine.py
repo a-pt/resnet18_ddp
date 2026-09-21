@@ -1,6 +1,6 @@
 import torch
 
-def train_one_epoch(model, train_loader, loss_fn, optimizer, device):
+def train_one_epoch(model, train_loader, loss_fn, optimizer, scaler, use_amp, device):
     model.train()
     running_loss = 0.0
 
@@ -9,11 +9,13 @@ def train_one_epoch(model, train_loader, loss_fn, optimizer, device):
 
         optimizer.zero_grad()
 
-        logits = model(images)
-        loss = loss_fn(logits, labels)
+        with torch.autocast(device_type=device.type, enabled=use_amp):
+            logits = model(images)
+            loss = loss_fn(logits, labels)
 
-        loss.backward()
-        optimizer.step()
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
 
         running_loss += loss.item()
 

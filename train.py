@@ -19,6 +19,11 @@ def main():
     set_seed(config.seed)
     device = get_device()
 
+    # AMP configuration
+    use_amp = device.type == "cuda"
+
+    scaler = torch.amp.GradScaler("cuda",enabled=use_amp)
+
     writer = SummaryWriter(log_dir="runs/resnet18")
 
     print("=" * 50)
@@ -64,7 +69,7 @@ def main():
     best_accuracy = 0.0
 
     for epoch in range(config.epochs):
-        train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, device)
+        train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, scaler, use_amp, device)
         writer.add_scalar("Loss/Train", train_loss, epoch)
         
         val_loss, val_acc = validate(model, test_loader, loss_fn, device)
