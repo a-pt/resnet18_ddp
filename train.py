@@ -1,3 +1,5 @@
+import time
+
 import torch
 import torch.nn as nn
 
@@ -69,7 +71,19 @@ def main():
     best_accuracy = 0.0
 
     for epoch in range(config.epochs):
+
+        if device.type == "cuda":
+            torch.cuda.synchronize()
+
+        start_time = time.perf_counter()
+
         train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, scaler, use_amp, device)
+        
+        if device.type == "cuda":
+            torch.cuda.synchronize()
+
+        train_time = time.perf_counter() - start_time
+
         writer.add_scalar("Loss/Train", train_loss, epoch)
         
         val_loss, val_acc = validate(model, test_loader, loss_fn, device)
@@ -93,6 +107,7 @@ def main():
         print(f"Train Loss: {train_loss:.4f}")
         print(f"Val Loss: {val_loss:.4f}")
         print(f"Val Acc: {val_acc*100:.2f}%")
+        print(f"Train Time: {train_time:.2f} seconds")
         print()
 
         save_checkpoint(model, optimizer, scheduler, epoch, best_accuracy, "checkpoints/last_checkpoint.pth")
