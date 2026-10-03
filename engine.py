@@ -30,7 +30,7 @@ def validate(model, val_loader, loss_fn, device):
 
     with torch.no_grad():
         for images, labels in val_loader:
-            images, labels = images.to(device), labels.to(device)
+            images, labels = images.to(device,non_blocking=True), labels.to(device,non_blocking=True)
 
             logits = model(images)
             loss = loss_fn(logits, labels)

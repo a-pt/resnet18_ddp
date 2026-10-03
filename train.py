@@ -1,7 +1,10 @@
+from torch import device
 import time
 
 import torch
 import torch.nn as nn
+
+from torch.profiler import profile, record_function, ProfilerActivity
 
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -15,6 +18,50 @@ from models.resnet18 import ResNet18
 
 from engine import train_one_epoch, validate
 
+def profile_training(model, train_loader, loss_fn, optimizer, scaler, use_amp, device):
+    
+    model.train()
+
+    with profile(
+        activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
+        on_trace_ready=torch.profiler.tensorboard_trace_handler("./runs/resnet18_profiler"),
+        record_shapes=True,
+        profile_memory=True,
+        with_stack=True,
+    ) as prof:
+
+        for step, (images, labels) in enumerate(train_loader):
+
+            images = images.to(device)
+            labels = labels.to(device)
+
+            optimizer.zero_grad()
+
+            with record_function("forward"):
+                with torch.autocast(
+                    device_type=device.type,
+                    enabled=use_amp,
+                ):
+                    logits = model(images)
+                    loss = loss_fn(logits, labels)
+
+            with record_function("backward"):
+                scaler.scale(loss).backward()
+
+            with record_function("optimizer_step"):
+                scaler.step(optimizer)
+                scaler.update()
+
+            prof.step()
+
+            if step >= 4:
+                break
+    
+    print("\n" + "=" * 50)
+    print("Profiler Results")
+    print("=" * 50)
+    print(prof.key_averages().table(sort_by="self_cuda_time_total",row_limit=20))
 
 def main():
     config = Config()
@@ -63,6 +110,12 @@ def main():
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,T_max=config.epochs)
+
+    print("\nRunning PyTorch Profiler...")
+    profile_training(model, train_loader, loss_fn, optimizer, scaler, use_amp, device)
+    print("Profiler completed.")
+    
+    return
     
     print("\n" + "=" * 50)
     print("Training")
