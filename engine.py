@@ -4,7 +4,7 @@ def train_one_epoch(model, train_loader, loss_fn, optimizer, scaler, use_amp, de
     model.train()
     running_loss = 0.0
 
-    for step, (images, labels) in enumerate(train_loader):
+    for images, labels in train_loader:
         
         images, labels = images.to(device), labels.to(device)
 

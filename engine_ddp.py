@@ -9,21 +9,12 @@ def train_one_epoch_ddp(model, train_loader, loss_fn, optimizer, scaler, use_amp
     total_loss = torch.tensor(0.0, device=device)
     total_samples = torch.tensor(0, device=device)
 
-    for step, (images, labels) in enumerate(train_loader):
-
-        if step == 0:
-            print("[Rank] First batch received", flush=True)
+    for images, labels in train_loader:
 
         images = images.to(device)
         labels = labels.to(device)
 
-        if step == 0:
-            print("[Rank] Data moved to GPU", flush=True)
-
         optimizer.zero_grad()
-
-        if step == 0:
-            print("[Rank] Starting forward", flush=True)
 
         with torch.autocast(
             device_type=device.type,
@@ -32,22 +23,10 @@ def train_one_epoch_ddp(model, train_loader, loss_fn, optimizer, scaler, use_amp
             logits = model(images)
             loss = loss_fn(logits, labels)
 
-        if step == 0:
-            print("[Rank] Forward finished", flush=True)
-
-        if step == 0:
-            print("[Rank] Starting backward", flush=True)
-
         scaler.scale(loss).backward()
-
-        if step == 0:
-            print("[Rank] Backward finished", flush=True)
 
         scaler.step(optimizer)
         scaler.update()
-
-        if step == 0:
-            print("[Rank] Optimizer step finished", flush=True)
 
         # CrossEntropyLoss uses mean reduction by default.
         # Multiply by batch size to recover the total loss
