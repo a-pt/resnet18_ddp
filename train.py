@@ -68,7 +68,7 @@ def main():
     set_seed(config.seed)
     device = get_device()
 
-    #Enable cuDNN benchmark
+    # cuDNN benchmark
     if device.type == "cuda":
         torch.backends.cudnn.benchmark = False
 
