@@ -70,7 +70,7 @@ def main():
 
     #Enable cuDNN benchmark
     if device.type == "cuda":
-        torch.backends.cudnn.benchmark = True
+        torch.backends.cudnn.benchmark = False
 
     # AMP configuration
     use_amp = device.type == "cuda"
