@@ -67,7 +67,7 @@ def profile_training(model, train_loader, loss_fn, optimizer, scaler, use_amp, d
 
 def setup_distributed():
     
-    dist.init_process_group(backend="gloo",init_method="env://")
+    dist.init_process_group(backend="nccl",init_method="env://")
 
     rank = dist.get_rank()
     world_size = dist.get_world_size()
