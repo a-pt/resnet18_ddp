@@ -4,7 +4,8 @@ def train_one_epoch(model, train_loader, loss_fn, optimizer, scaler, use_amp, de
     model.train()
     running_loss = 0.0
 
-    for images, labels in train_loader:
+    for step, (images, labels) in enumerate(train_loader):
+        
         images, labels = images.to(device), labels.to(device)
 
         optimizer.zero_grad()
@@ -12,7 +13,7 @@ def train_one_epoch(model, train_loader, loss_fn, optimizer, scaler, use_amp, de
         with torch.autocast(device_type=device.type, enabled=use_amp):
             logits = model(images)
             loss = loss_fn(logits, labels)
-
+        
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update()
