@@ -68,6 +68,10 @@ def main():
     set_seed(config.seed)
     device = get_device()
 
+    #Enable cuDNN benchmark
+    if device.type == "cuda":
+        torch.backends.cudnn.benchmark = True
+
     # AMP configuration
     use_amp = device.type == "cuda"
 
@@ -111,11 +115,11 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,T_max=config.epochs)
 
-    print("\nRunning PyTorch Profiler...")
-    profile_training(model, train_loader, loss_fn, optimizer, scaler, use_amp, device)
-    print("Profiler completed.")
+    # print("\nRunning PyTorch Profiler...")
+    # profile_training(model, train_loader, loss_fn, optimizer, scaler, use_amp, device)
+    # print("Profiler completed.")
     
-    return
+    # return
     
     print("\n" + "=" * 50)
     print("Training")
