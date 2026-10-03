@@ -13,7 +13,6 @@ from torch.utils.tensorboard import SummaryWriter
 
 from utils.checkpoint import save_checkpoint
 from configs.config import Config
-from utils.device import get_device
 from utils.seed import set_seed
 from datasets.cifar10 import get_cifar10_datasets
 from models.resnet18 import ResNet18
@@ -76,19 +75,17 @@ def setup_distributed():
     return rank, world_size, local_rank
 
 
-
-
 def main():
     rank, world_size, local_rank = setup_distributed()
 
     config = Config()
     set_seed(config.seed)
 
-    if torch.cuda.is_available():
-        device = torch.device(f"cuda:{local_rank}")
-        torch.cuda.set_device(device)
-    else:
-        device = torch.device("cpu")
+    if not torch.cuda.is_available():
+        raise RuntimeError("CUDA is required for NCCL DDP.")
+
+    device = torch.device(f"cuda:{local_rank}")
+    torch.cuda.set_device(device)
 
     print(
         f"Rank {rank}/{world_size} | "
@@ -128,8 +125,6 @@ def main():
         num_workers=config.num_workers,
     )
 
-    images, labels = next(iter(train_loader))
-
     test_sampler = DistributedSampler(
         test_dataset,
         num_replicas=world_size,
@@ -154,6 +149,8 @@ def main():
         writer = SummaryWriter(log_dir="runs/resnet18")
         dummy = torch.randn(1, 3, 32, 32).to(device)
         writer.add_graph(model.module, dummy)
+        
+        images, labels = next(iter(train_loader))
         writer.add_images("Training Images",images[:16])
     else:
         writer = None
@@ -177,11 +174,7 @@ def main():
 
     for epoch in range(config.epochs):
 
-        print(f"[Rank {rank}] Starting epoch {epoch + 1}", flush=True)
-
         train_sampler.set_epoch(epoch)
-
-        print(f"[Rank {rank}] Starting train_one_epoch", flush=True)
 
         if device.type == "cuda":
             torch.cuda.synchronize()
@@ -189,8 +182,6 @@ def main():
         start_time = time.perf_counter()
 
         train_loss = train_one_epoch_ddp(model, train_loader, loss_fn, optimizer, scaler, use_amp, device)
-
-        print(f"[Rank {rank}] train_one_epoch finished", flush=True)
         
         if device.type == "cuda":
             torch.cuda.synchronize()
@@ -220,7 +211,7 @@ def main():
         if val_acc > best_accuracy:
             best_accuracy = val_acc
             if rank == 0:
-                save_checkpoint(model.module, optimizer, scheduler, epoch, best_accuracy, "checkpoints/best_model.pth")
+                save_checkpoint(model, optimizer, scheduler, epoch, best_accuracy, "checkpoints/best_model.pth")
 
         if rank == 0:
             print(f"Epoch {epoch+1}/{config.epochs}")

@@ -2,6 +2,9 @@ import torch
 
 
 def save_checkpoint(model, optimizer, scheduler, epoch, best_accuracy, path):
+    
+    model = model.module if hasattr(model, "module") else model
+
     checkpoint = {
         "epoch": epoch,
         "model_state_dict": model.state_dict(),
