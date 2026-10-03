@@ -15,6 +15,8 @@ def save_checkpoint(model, optimizer, scheduler, epoch, best_accuracy, path):
 def load_checkpoint(model, optimizer, scheduler, path, device):
     checkpoint = torch.load(path, map_location=device, weights_only=True)
     
+    model = model.module if hasattr(model, "module") else model
+
     model.load_state_dict(checkpoint["model_state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
     scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
