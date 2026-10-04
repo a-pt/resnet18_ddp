@@ -7,7 +7,7 @@ class Config:
 
     # Training
     batch_size: int = 128
-    epochs: int = 5
+    epochs: int = 10
     learning_rate: float = 1e-3
 
     # Device
