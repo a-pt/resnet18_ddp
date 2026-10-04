@@ -227,7 +227,7 @@ DDP(ResNet-18)                              DDP(ResNet-18)
 ### 1. Dataset Partitioning (`DistributedSampler`)
 
 `DistributedSampler` partitions the training dataset into $W$ non-overlapping
-subsets (where $W = \text{world\_size}$):
+subsets (where W = world_size):
 
 ```python
 train_sampler = DistributedSampler(
