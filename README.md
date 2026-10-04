@@ -332,7 +332,11 @@ $$S = \frac{t_1}{t_2} = \frac{7.56}{4.39} \approx \mathbf{1.72\times}$$
 
 #### Parallel Scaling Efficiency ($E$):
 
-$$E = \frac{S}{N_{\text{GPUs}}} \times 100\% = \frac{1.72}{2} \times 100\% = \mathbf{86.0\%}$$
+$$
+E = \frac{S}{N_{\text{GPUs}}} \times 100\%
+= \frac{1.72}{2} \times 100\%
+= \mathbf{86.0\%}
+$$
 
 #### Throughput ($\text{Img/sec}$):
 
